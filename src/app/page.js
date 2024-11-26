@@ -15,7 +15,7 @@ const HomePage = () => {
     { field: 'Genres', headerName: 'Genres', filter: 'agTextColumnFilter', sortable: true, flex: 1 },
     {
       field: 'Quality',
-      headerName: 'Quality',
+      headerName: 'Performance Quality',
       filter: 'agTextColumnFilter',
       sortable: true,
       flex: 1
