@@ -20,10 +20,25 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`bg-gray-900 text-white h-screen flex flex-col ${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* Top Bar */}
+        <header className="bg-gray-800 p-4 shadow-md">
+          <div className="container mx-auto">
+            <h1 className="text-xl font-bold">chrisvogt.me</h1>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-grow">
+          <div className="container mx-auto h-full p-4">{children}</div>
+        </main>
+
+        {/* Optional Footer */}
+        {/* <footer className="bg-gray-800 p-4">
+          <div className="container mx-auto text-sm text-center">
+            © {new Date().getFullYear()} chrisvogt.me. All rights reserved.
+          </div>
+        </footer> */}
       </body>
     </html>
   );

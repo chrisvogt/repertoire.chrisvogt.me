@@ -5,25 +5,46 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 
-const RepertoirePage = () => {
+const HomePage = () => {
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const columnDefs = [
-    { field: 'Title', headerName: 'Title', filter: 'agTextColumnFilter', sortable: true },
-    { field: 'Artists', headerName: 'Artists', filter: 'agTextColumnFilter', sortable: true },
-    { field: 'Genres', headerName: 'Genres', filter: 'agTextColumnFilter', sortable: true },
-    { field: 'Quality', headerName: 'Quality', filter: 'agTextColumnFilter', sortable: true },
-    { field: 'Transpose', headerName: 'Transpose', filter: 'agTextColumnFilter', sortable: true },
+    { field: 'Title', headerName: 'Title', filter: 'agTextColumnFilter', sortable: true, flex: 2 },
+    { field: 'Artists', headerName: 'Artists', filter: 'agTextColumnFilter', sortable: true, flex: 2 },
+    { field: 'Genres', headerName: 'Genres', filter: 'agTextColumnFilter', sortable: true, flex: 1 },
+    {
+      field: 'Quality',
+      headerName: 'Quality',
+      filter: 'agTextColumnFilter',
+      sortable: true,
+      flex: 1,
+      autoSize: true, // Resize to fit content
+    },
+    {
+      field: 'Transpose',
+      headerName: 'Transpose',
+      filter: 'agTextColumnFilter',
+      sortable: true,
+      width: 70,
+      minWidth: 50,
+      flex: 1,
+      autoSize: true,
+    },
     {
       field: 'Link',
-      headerName: 'Sheet Music Link',
+      headerName: 'Link',
       cellRenderer: params => {
         if (params.value) {
-          return `<a href="${params.value}" target="_blank" rel="noopener noreferrer">View</a>`;
+          return (
+            <a href="${params.value}" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+              View Sheet Music
+            </a>
+          );
         }
         return '';
       },
+      flex: 1, // Absorb extra space
     },
   ];
 
@@ -37,7 +58,7 @@ const RepertoirePage = () => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await fetch('/api/songs'); // Fetch songs from your API endpoint
+        const response = await fetch('/api/songs');
         const data = await response.json();
         setRowData(data);
       } catch (error) {
@@ -51,20 +72,14 @@ const RepertoirePage = () => {
   }, []);
 
   return (
-    <div
-      className="ag-theme-quartz-auto-dark"
-      style={{ height: '600px', width: '100%', padding: '20px' }}
-    >
-      <h1>Repertoire</h1>
+    <div className="ag-theme-quartz-auto-dark h-full w-full">
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
-        pagination={true}
-        paginationPageSize={10}
         overlayLoadingTemplate={
           loading
-            ? '<span class="ag-overlay-loading-center">Loading songs...</span>'
+            ? `<span class="ag-overlay-loading-center">Loading songs...</span>`
             : null
         }
       />
@@ -72,4 +87,4 @@ const RepertoirePage = () => {
   );
 };
 
-export default RepertoirePage;
+export default HomePage;
