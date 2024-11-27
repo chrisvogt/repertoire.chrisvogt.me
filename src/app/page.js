@@ -35,7 +35,7 @@ const HomePage = () => {
       cellRenderer: params => {
         if (params.value) {
           return (
-            <a href="${params.value}" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+            <a href={ params.value } target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
               View Sheet Music
             </a>
           );
