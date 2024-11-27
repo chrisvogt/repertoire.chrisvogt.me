@@ -12,7 +12,6 @@ const HomePage = () => {
   const columnDefs = [
     { field: 'Title', headerName: 'Title', filter: 'agTextColumnFilter', sortable: true, flex: 2 },
     { field: 'Artists', headerName: 'Artists', filter: 'agTextColumnFilter', sortable: true, flex: 2 },
-    { field: 'Genres', headerName: 'Genres', filter: 'agTextColumnFilter', sortable: true, flex: 1 },
     {
       field: 'Quality',
       headerName: 'Performance Quality',
