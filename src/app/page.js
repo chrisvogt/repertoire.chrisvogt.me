@@ -5,58 +5,70 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 
+const columnDefs = [
+  {
+    field: 'Title',
+    headerName: 'Title',
+    filter: 'agTextColumnFilter',
+    sortable: true,
+    flex: 2
+  },
+  {
+    field: 'Artists',
+    headerName: 'Artist(s)',
+    filter: 'agTextColumnFilter',
+    sortable: true,
+    flex: 2
+  },
+  {
+    field: 'Quality',
+    headerName: 'Performance Quality',
+    filter: 'agTextColumnFilter',
+    sortable: true,
+    flex: 1,
+  },
+  {
+    field: 'Transpose',
+    headerName: 'Transpose',
+    filter: 'agTextColumnFilter',
+    sortable: true,
+    width: 70,
+    minWidth: 50,
+    flex: 1,
+  },
+  {
+    field: 'Link',
+    headerName: 'Link',
+    cellRenderer: params => {
+      if (params.value) {
+        return (
+          <a
+            href={params.value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            Sheet Music
+          </a>
+        );
+      }
+      return '';
+    },
+    flex: 1,
+  },
+];
+
+const defaultColDef = {
+  flex: 1,
+  resizable: true,
+  filter: true,
+  sortable: true,
+};
+
 const HomePage = () => {
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [gridApi, setGridApi] = useState(null);
-
-  const columnDefs = [
-    { field: 'Title', headerName: 'Title', filter: 'agTextColumnFilter', sortable: true, flex: 2 },
-    { field: 'Artists', headerName: 'Artists', filter: 'agTextColumnFilter', sortable: true, flex: 2 },
-    {
-      field: 'Quality',
-      headerName: 'Performance Quality',
-      filter: 'agTextColumnFilter',
-      sortable: true,
-      flex: 1,
-    },
-    {
-      field: 'Transpose',
-      headerName: 'Transpose',
-      filter: 'agTextColumnFilter',
-      sortable: true,
-      width: 70,
-      minWidth: 50,
-      flex: 1,
-    },
-    {
-      field: 'Link',
-      headerName: 'Link',
-      cellRenderer: params => {
-        if (params.value) {
-          return (
-            <a
-              href={params.value}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline"
-            >
-              View Sheet Music
-            </a>
-          );
-        }
-        return '';
-      },
-      flex: 1,
-    },
-  ];
-
-  const defaultColDef = {
-    flex: 1,
-    resizable: true,
-    filter: true,
-    sortable: true,
-  };
 
   useEffect(() => {
     const fetchSongs = async () => {
