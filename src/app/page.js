@@ -8,6 +8,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 const HomePage = () => {
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [gridApi, setGridApi] = useState(null);
 
   const columnDefs = [
     { field: 'Title', headerName: 'Title', filter: 'agTextColumnFilter', sortable: true, flex: 2 },
@@ -73,6 +74,42 @@ const HomePage = () => {
     fetchSongs();
   }, []);
 
+  const handleResize = () => {
+    if (gridApi) {
+      const width = window.innerWidth;
+
+      // Update column visibility based on screen width
+      if (width < 768) {
+        gridApi.setColumnVisible('Quality', false);
+        gridApi.setColumnVisible('Transpose', false);
+      } else {
+        gridApi.setColumnVisible('Quality', true);
+        gridApi.setColumnVisible('Transpose', true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [gridApi]);
+
+  const onGridReady = params => {
+    setGridApi(params.api);
+
+    // Apply column visibility based on initial window size
+    const width = window.innerWidth;
+    if (width < 768) {
+      params.api.setColumnVisible('Quality', false);
+      params.api.setColumnVisible('Transpose', false);
+    }
+  };
+
   return (
     <div className="ag-theme-quartz-auto-dark h-full w-full">
       <AgGridReact
@@ -85,15 +122,7 @@ const HomePage = () => {
         noRowsOverlayComponentFramework={() => (
           <span className="ag-overlay-no-rows-center">No Rows to Show</span>
         )}
-        onGridReady={params => {
-          if (loading) {
-            params.api.showLoadingOverlay();
-          } else if (rowData.length === 0) {
-            params.api.showNoRowsOverlay();
-          } else {
-            params.api.hideOverlay();
-          }
-        }}
+        onGridReady={onGridReady}
       />
     </div>
   );
