@@ -17,7 +17,7 @@ const HomePage = () => {
       headerName: 'Performance Quality',
       filter: 'agTextColumnFilter',
       sortable: true,
-      flex: 1
+      flex: 1,
     },
     {
       field: 'Transpose',
@@ -26,7 +26,7 @@ const HomePage = () => {
       sortable: true,
       width: 70,
       minWidth: 50,
-      flex: 1
+      flex: 1,
     },
     {
       field: 'Link',
@@ -34,14 +34,19 @@ const HomePage = () => {
       cellRenderer: params => {
         if (params.value) {
           return (
-            <a href={ params.value } target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+            <a
+              href={params.value}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
               View Sheet Music
             </a>
           );
         }
         return '';
       },
-      flex: 1, // Absorb extra space
+      flex: 1,
     },
   ];
 
@@ -74,11 +79,21 @@ const HomePage = () => {
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
-        overlayLoadingTemplate={
-          loading
-            ? `<span class="ag-overlay-loading-center">Loading songs...</span>`
-            : null
-        }
+        loadingOverlayComponentFramework={() => (
+          <span className="ag-overlay-loading-center">Loading songs...</span>
+        )}
+        noRowsOverlayComponentFramework={() => (
+          <span className="ag-overlay-no-rows-center">No Rows to Show</span>
+        )}
+        onGridReady={params => {
+          if (loading) {
+            params.api.showLoadingOverlay();
+          } else if (rowData.length === 0) {
+            params.api.showNoRowsOverlay();
+          } else {
+            params.api.hideOverlay();
+          }
+        }}
       />
     </div>
   );
