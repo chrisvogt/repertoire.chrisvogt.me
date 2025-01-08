@@ -7,15 +7,16 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 
 const columnDefs = [
   {
-    field: "Title",
-    headerName: "Title",
+    field: "Artists",
+    headerName: "Artist(s)",
     filter: "agTextColumnFilter",
+    sort: "asc", // Set default sort order
     sortable: true,
     flex: 2,
   },
   {
-    field: "Artists",
-    headerName: "Artist(s)",
+    field: "Title",
+    headerName: "Title",
     filter: "agTextColumnFilter",
     sortable: true,
     flex: 2,
