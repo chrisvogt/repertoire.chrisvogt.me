@@ -1,45 +1,45 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-quartz.css';
+import React, { useState, useEffect } from "react";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
 
 const columnDefs = [
   {
-    field: 'Title',
-    headerName: 'Title',
-    filter: 'agTextColumnFilter',
+    field: "Title",
+    headerName: "Title",
+    filter: "agTextColumnFilter",
     sortable: true,
-    flex: 2
+    flex: 2,
   },
   {
-    field: 'Artists',
-    headerName: 'Artist(s)',
-    filter: 'agTextColumnFilter',
+    field: "Artists",
+    headerName: "Artist(s)",
+    filter: "agTextColumnFilter",
     sortable: true,
-    flex: 2
+    flex: 2,
   },
   {
-    field: 'Quality',
-    headerName: 'Performance Quality',
-    filter: 'agTextColumnFilter',
+    field: "Quality",
+    headerName: "Performance Quality",
+    filter: "agTextColumnFilter",
     sortable: true,
     flex: 1,
   },
   {
-    field: 'Transpose',
-    headerName: 'Transpose',
-    filter: 'agTextColumnFilter',
+    field: "Transpose",
+    headerName: "Transpose",
+    filter: "agTextColumnFilter",
     sortable: true,
     width: 70,
     minWidth: 50,
     flex: 1,
   },
   {
-    field: 'Link',
-    headerName: 'Link',
-    cellRenderer: params => {
+    field: "Link",
+    headerName: "Link",
+    cellRenderer: (params) => {
       if (params.value) {
         return (
           <a
@@ -52,7 +52,7 @@ const columnDefs = [
           </a>
         );
       }
-      return '';
+      return "";
     },
     flex: 1,
   },
@@ -66,20 +66,18 @@ const defaultColDef = {
 };
 
 const HomePage = () => {
-  const [rowData, setRowData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [rowData, setRowData] = useState(null); // Initialize as null to indicate loading
   const [gridApi, setGridApi] = useState(null);
 
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await fetch('/api/songs');
+        const response = await fetch("/api/songs");
         const data = await response.json();
         setRowData(data);
       } catch (error) {
-        console.error('Error fetching song data:', error);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching song data:", error);
+        setRowData([]); // Fallback to empty data on error
       }
     };
 
@@ -92,48 +90,61 @@ const HomePage = () => {
 
       // Update column visibility based on screen width
       if (width < 768) {
-        gridApi.setColumnVisible('Quality', false);
-        gridApi.setColumnVisible('Transpose', false);
+        gridApi.setColumnVisible("Quality", false);
+        gridApi.setColumnVisible("Transpose", false);
       } else {
-        gridApi.setColumnVisible('Quality', true);
-        gridApi.setColumnVisible('Transpose', true);
+        gridApi.setColumnVisible("Quality", true);
+        gridApi.setColumnVisible("Transpose", true);
       }
     }
   };
 
   useEffect(() => {
     // Add event listener for window resize
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     // Cleanup on unmount
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [gridApi]);
 
-  const onGridReady = params => {
+  const onGridReady = (params) => {
     setGridApi(params.api);
 
     // Apply column visibility based on initial window size
     const width = window.innerWidth;
     if (width < 768) {
-      params.api.setColumnVisible('Quality', false);
-      params.api.setColumnVisible('Transpose', false);
+      params.api.setColumnVisible("Quality", false);
+      params.api.setColumnVisible("Transpose", false);
+    }
+
+    // Show loading overlay initially
+    if (!rowData) {
+      params.api.showLoadingOverlay();
     }
   };
+
+  useEffect(() => {
+    if (gridApi) {
+      if (rowData === null) {
+        gridApi.showLoadingOverlay();
+      } else if (rowData.length === 0) {
+        gridApi.showNoRowsOverlay();
+      } else {
+        gridApi.hideOverlay();
+      }
+    }
+  }, [rowData, gridApi]);
 
   return (
     <div className="ag-theme-quartz-auto-dark h-full w-full">
       <AgGridReact
-        rowData={rowData}
+        rowData={rowData || []} // Provide empty array if rowData is null
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
-        loadingOverlayComponentFramework={() => (
-          <span className="ag-overlay-loading-center">Loading songs...</span>
-        )}
-        noRowsOverlayComponentFramework={() => (
-          <span className="ag-overlay-no-rows-center">No Rows to Show</span>
-        )}
+        overlayLoadingTemplate="<span class='ag-overlay-loading-center'>Loading songs...</span>"
+        overlayNoRowsTemplate="<span class='ag-overlay-no-rows-center'>No Rows to Show</span>"
         onGridReady={onGridReady}
       />
     </div>
