@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
+
+// Register AG Grid modules
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 const columnDefs = [
   {
@@ -67,81 +71,75 @@ const defaultColDef = {
 };
 
 const HomePage = () => {
-  const [rowData, setRowData] = useState(null); // Initialize as null to indicate loading
-  const [gridApi, setGridApi] = useState(null);
+  const [rowData, setRowData] = useState(null);
+  const gridApiRef = useRef(null);
 
   useEffect(() => {
     const fetchSongs = async () => {
       try {
         const response = await fetch("/api/songs");
+        if (!response.ok) {
+          throw new Error("Failed to fetch songs");
+        }
         const data = await response.json();
         setRowData(data);
       } catch (error) {
         console.error("Error fetching song data:", error);
-        setRowData([]); // Fallback to empty data on error
+        setRowData([]);
       }
     };
 
     fetchSongs();
   }, []);
 
-  const handleResize = () => {
-    if (gridApi) {
-      const width = window.innerWidth;
+  const updateColumnVisibility = useCallback((api) => {
+    if (!api) return;
+    
+    const width = window.innerWidth;
+    const isMobile = width < 768;
+    
+    // AG Grid v35 uses setColumnsVisible (plural) with array of column IDs
+    api.setColumnsVisible(["Quality", "Transpose"], !isMobile);
+  }, []);
 
-      // Update column visibility based on screen width
-      if (width < 768) {
-        gridApi.setColumnVisible("Quality", false);
-        gridApi.setColumnVisible("Transpose", false);
-      } else {
-        gridApi.setColumnVisible("Quality", true);
-        gridApi.setColumnVisible("Transpose", true);
-      }
-    }
-  };
+  const handleResize = useCallback(() => {
+    updateColumnVisibility(gridApiRef.current);
+  }, [updateColumnVisibility]);
 
   useEffect(() => {
-    // Add event listener for window resize
     window.addEventListener("resize", handleResize);
-
-    // Cleanup on unmount
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [gridApi]);
+  }, [handleResize]);
 
-  const onGridReady = (params) => {
-    setGridApi(params.api);
+  const onGridReady = useCallback((params) => {
+    gridApiRef.current = params.api;
+    updateColumnVisibility(params.api);
 
-    // Apply column visibility based on initial window size
-    const width = window.innerWidth;
-    if (width < 768) {
-      params.api.setColumnVisible("Quality", false);
-      params.api.setColumnVisible("Transpose", false);
-    }
-
-    // Show loading overlay initially
-    if (!rowData) {
+    if (rowData === null) {
       params.api.showLoadingOverlay();
     }
-  };
+  }, [rowData, updateColumnVisibility]);
 
   useEffect(() => {
-    if (gridApi) {
-      if (rowData === null) {
-        gridApi.showLoadingOverlay();
-      } else if (rowData.length === 0) {
-        gridApi.showNoRowsOverlay();
-      } else {
-        gridApi.hideOverlay();
-      }
+    const api = gridApiRef.current;
+    if (!api) return;
+
+    if (rowData === null) {
+      api.showLoadingOverlay();
+    } else if (rowData.length === 0) {
+      api.showNoRowsOverlay();
+    } else {
+      api.hideOverlay();
     }
-  }, [rowData, gridApi]);
+  }, [rowData]);
 
   return (
     <div className="ag-theme-quartz-auto-dark h-full w-full">
       <AgGridReact
-        rowData={rowData || []} // Provide empty array if rowData is null
+        theme="legacy"
+        rowData={rowData ?? []}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         overlayLoadingTemplate="<span class='ag-overlay-loading-center'>Loading songs...</span>"
