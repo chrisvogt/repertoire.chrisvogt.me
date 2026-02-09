@@ -118,7 +118,7 @@ const HomePage = () => {
     updateColumnVisibility(params.api);
 
     if (rowData === null) {
-      params.api.showLoadingOverlay();
+      params.api.setGridOption("loading", true);
     }
   }, [rowData, updateColumnVisibility]);
 
@@ -127,10 +127,12 @@ const HomePage = () => {
     if (!api) return;
 
     if (rowData === null) {
-      api.showLoadingOverlay();
+      api.setGridOption("loading", true);
     } else if (rowData.length === 0) {
       api.showNoRowsOverlay();
+      api.setGridOption("loading", false);
     } else {
+      api.setGridOption("loading", false);
       api.hideOverlay();
     }
   }, [rowData]);
