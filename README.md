@@ -18,4 +18,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 I've been soring my repertoire in the following Google Sheet.
 
-After making updates, I export the sheet as a CSV file and use [csvtojson](https://www.npmjs.com/package/csvtojson) to convert the exported file to JSON.
+After making updates, I export the sheet as a CSV file and convert it to JSON using the conversion script:
+
+```bash
+pnpm convert:csv src/data/repertoire-02082026.csv
+```
+
+This will create a JSON file with the same name in the same directory (e.g., `repertoire-02082026.json`).

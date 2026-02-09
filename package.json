@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "convert:csv": "node scripts/convert-csv-to-json.js"
   },
   "dependencies": {
     "ag-grid-community": "^32.3.3",
@@ -17,6 +18,7 @@
     "webmidi": "^3.1.12"
   },
   "devDependencies": {
+    "csvtojson": "^2.0.10",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
