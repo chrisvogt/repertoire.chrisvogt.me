@@ -258,6 +258,22 @@ const HomePage = () => {
     >
       {/* Same component as blog index / MDX posts: `fontSize: [6, calc(1.25em + 2vw)]` */}
       <PageHeader>My Piano Repertoire</PageHeader>
+      <Box
+        as="p"
+        sx={{
+          fontSize: [3, 4],
+          lineHeight: 1.65,
+          color: "textMuted",
+          maxWidth: "65ch",
+          mt: 0,
+          mb: 4,
+        }}
+      >
+        A collection of songs I practice on the piano most often, with links to sheet music where
+        available. Sort by <strong>performance quality</strong> to see songs by skill and practice.{" "}
+        <strong>Transpose</strong> shows steps to reach the familiar key—usually the key of the most
+        popular recording or release.
+      </Box>
       {/*
         Flex child with minHeight: 0 gives AG Grid a bounded height; avoid fixed calc now that the
         shell uses a compact TopNavigation-style header.
@@ -265,7 +281,8 @@ const HomePage = () => {
       <Box
         sx={{
           flex: 1,
-          minHeight: "min(50vh, 420px)",
+          /* Taller default viewport for long lists (~400 rows); still capped so tiny screens don’t overflow */
+          minHeight: ["min(52vh, 360px)", null, "min(68vh, 720px)"],
           width: "100%",
           overflow: "hidden",
           borderRadius: "default",
