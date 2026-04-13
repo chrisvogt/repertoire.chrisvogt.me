@@ -11,7 +11,7 @@
     "convert:csv": "node scripts/convert-csv-to-json.js"
   },
   "dependencies": {
-    "@chronogrove/ui": "^0.82.0",
+    "@chronogrove/ui": "^0.82.1",
     "@emotion/react": "^11.14.0",
     "@theme-ui/components": "^0.17.4",
     "ag-grid-community": "^35.2.1",
@@ -24,13 +24,10 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^16.2.3",
-    "autoprefixer": "^10.4.27",
     "csvtojson": "^2.0.14",
     "eslint": "^9.39.4",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "postcss": "^8.5.9",
-    "tailwindcss": "^3.4.19"
+    "eslint-plugin-react-hooks": "^5.2.0"
   },
   "packageManager": "pnpm@9.12.1+sha512.e5a7e52a4183a02d5931057f7a0dbff9d5e9ce3161e33fa68ae392125b79282a8a8a470a51dfc8a0ed86221442eb2fb57019b0990ed24fab519bf0e1bc5ccfc4"
 }

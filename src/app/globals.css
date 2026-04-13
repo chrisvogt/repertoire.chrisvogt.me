@@ -1,9 +1,5 @@
-/* Color toggle: bundled by `@chronogrove/ui` (transitive `@theme-toggles/react`). Must precede @tailwind. */
+/* Color toggle: bundled by `@chronogrove/ui` (transitive `@theme-toggles/react`). */
 @import "@chronogrove/ui/color-toggle-styles";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 html {
   scroll-behavior: smooth;
@@ -34,4 +30,24 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* App shell layout (replaces former Tailwind utilities; Theme UI drives colors/type). */
+.shell-body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.shell-main {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
 }
