@@ -11,22 +11,22 @@
     "convert:csv": "node scripts/convert-csv-to-json.js"
   },
   "dependencies": {
-    "ag-grid-community": "^35.0.1",
-    "ag-grid-react": "^35.0.1",
+    "ag-grid-community": "^35.2.1",
+    "ag-grid-react": "^35.2.1",
     "next": "^16.2.3",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "webmidi": "^3.1.12"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "webmidi": "^3.1.16"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^16.1.6",
-    "autoprefixer": "^10.4.20",
-    "csvtojson": "^2.0.10",
-    "eslint": "^9",
-    "eslint-plugin-react": "^7.37.2",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.17"
+    "@next/eslint-plugin-next": "^16.2.3",
+    "autoprefixer": "^10.4.27",
+    "csvtojson": "^2.0.14",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "postcss": "^8.5.9",
+    "tailwindcss": "^3.4.19"
   },
   "packageManager": "pnpm@9.12.1+sha512.e5a7e52a4183a02d5931057f7a0dbff9d5e9ce3161e33fa68ae392125b79282a8a8a470a51dfc8a0ed86221442eb2fb57019b0990ed24fab519bf0e1bc5ccfc4"
 }
