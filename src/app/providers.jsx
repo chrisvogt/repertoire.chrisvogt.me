@@ -3,6 +3,10 @@
 import { Box } from "@theme-ui/components";
 import { ChronogroveNextAppShell } from "@chronogrove/ui/next";
 
+const crossDomainColorMode = process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN?.trim()
+  ? { registrableDomain: process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN.trim() }
+  : null;
+
 /**
  * ChronogroveNextAppShell’s inner Box is not a flex container, so `flex: 1` on `<main>` would not
  * allocate height and AG Grid (`h-full`) collapsed to 0px. This column establishes the viewport
@@ -10,7 +14,7 @@ import { ChronogroveNextAppShell } from "@chronogrove/ui/next";
  */
 export default function Providers({ children }) {
   return (
-    <ChronogroveNextAppShell>
+    <ChronogroveNextAppShell crossDomainColorMode={crossDomainColorMode}>
       <Box
         sx={{
           display: "flex",

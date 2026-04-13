@@ -9,6 +9,10 @@ import ArticleColumnShell from "../components/article-column-shell";
 import Providers from "./providers";
 import SiteHeader from "../components/site-header";
 
+const crossDomainColorMode = process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN?.trim()
+  ? { registrableDomain: process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN.trim() }
+  : null;
+
 export const metadata = {
   title: "My Piano Repertoire | chrisvogt.me",
   description:
@@ -19,7 +23,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <ChronogroveNextRootLayoutHead />
+        <ChronogroveNextRootLayoutHead crossDomainColorMode={crossDomainColorMode} />
       </head>
       <body suppressHydrationWarning className="shell-body">
         <ChronogroveNextEmotionRegistry>

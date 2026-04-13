@@ -11,7 +11,7 @@
     "convert:csv": "node scripts/convert-csv-to-json.js"
   },
   "dependencies": {
-    "@chronogrove/ui": "^0.82.1",
+    "@chronogrove/ui": "0.82.3",
     "@emotion/react": "^11.14.0",
     "@theme-ui/components": "^0.17.4",
     "ag-grid-community": "^35.2.1",
