@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useColorMode } from "theme-ui";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
@@ -51,7 +52,8 @@ const columnDefs = [
             href={params.value}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:underline"
+            className="hover:underline"
+            style={{ color: "var(--theme-ui-colors-primary, #422ea3)" }}
           >
             Sheet Music
           </a>
@@ -71,8 +73,12 @@ const defaultColDef = {
 };
 
 const HomePage = () => {
+  const [colorMode] = useColorMode();
   const [rowData, setRowData] = useState(null);
   const gridApiRef = useRef(null);
+
+  const agGridSurfaceClass =
+    colorMode === "dark" ? "ag-theme-quartz-dark" : "ag-theme-quartz";
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -138,16 +144,28 @@ const HomePage = () => {
   }, [rowData]);
 
   return (
-    <div className="ag-theme-quartz-auto-dark h-full w-full">
-      <AgGridReact
-        theme="legacy"
-        rowData={rowData ?? []}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        overlayLoadingTemplate="<span class='ag-overlay-loading-center'>Loading songs...</span>"
-        overlayNoRowsTemplate="<span class='ag-overlay-no-rows-center'>No Rows to Show</span>"
-        onGridReady={onGridReady}
-      />
+    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+      {/*
+        Keep flex utilities off the ag-theme host — mixing display:flex with .ag-theme-* breaks
+        internal sizing; AG Grid uses NO_VALUE_SENTINEL (15538px) until the host has real dimensions.
+      */}
+      <div
+        className={`${agGridSurfaceClass} w-full overflow-hidden rounded-md shadow-sm`}
+        style={{
+          height: "calc(100dvh - 12rem)",
+          minHeight: "min(60vh, 480px)",
+        }}
+      >
+        <AgGridReact
+          theme="legacy"
+          rowData={rowData ?? []}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          overlayLoadingTemplate="<span class='ag-overlay-loading-center'>Loading songs...</span>"
+          overlayNoRowsTemplate="<span class='ag-overlay-no-rows-center'>No Rows to Show</span>"
+          onGridReady={onGridReady}
+        />
+      </div>
     </div>
   );
 };
