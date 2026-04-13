@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useColorMode } from "theme-ui";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useColorMode, useThemeUI } from "theme-ui";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-quartz.css";
+import { ModuleRegistry, AllCommunityModule, themeQuartz } from "ag-grid-community";
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
+
+/** Theme UI sometimes stores palette aliases (e.g. `tableBackground: 'light'`) instead of CSS strings. */
+function chronogroveCssColor(value, fallback) {
+  if (typeof value !== "string") return fallback;
+  if (value === "light" || value === "transparent") return fallback;
+  return value;
+}
 
 const columnDefs = [
   {
@@ -74,11 +79,84 @@ const defaultColDef = {
 
 const HomePage = () => {
   const [colorMode] = useColorMode();
+  const { theme } = useThemeUI();
   const [rowData, setRowData] = useState(null);
   const gridApiRef = useRef(null);
 
-  const agGridSurfaceClass =
-    colorMode === "dark" ? "ag-theme-quartz-dark" : "ag-theme-quartz";
+  const agGridTheme = useMemo(() => {
+    const c = theme?.colors ?? {};
+    const isDark = colorMode === "dark";
+    const pageBg = chronogroveCssColor(c.background, isDark ? "#14141F" : "#fdf8f5");
+    const primary = chronogroveCssColor(c.primary, "#422EA3");
+    const bodyText = chronogroveCssColor(c.text, isDark ? "#fff" : "#111");
+    const tableText = chronogroveCssColor(c.tableText, bodyText);
+
+    /** AG Grid’s foundation `backgroundColor` should be opaque; data/header layers use dedicated params. */
+    const params = {
+      accentColor: primary,
+      backgroundColor: pageBg,
+      foregroundColor: bodyText,
+      browserColorScheme: isDark ? "dark" : "light",
+      fontFamily: theme?.fonts?.body,
+      borderColor: isDark
+        ? chronogroveCssColor(c.tableBorder, "rgba(255, 255, 255, 0.12)")
+        : "rgba(17, 17, 17, 0.1)",
+    };
+
+    if (isDark) {
+      /*
+       * Chronogrove dark table tokens (@chronogrove/ui theme.js): even rows `tableRowBackground`
+       * (purple surface), odd rows `tableRowAlternateBackground` (rgba 30,37,48 — grey-blue),
+       * headers `tableHeaderBackground` (same hue as odd rows, higher alpha). That matches MDX
+       * tables, but in AG Grid the header band and odd stripes read as duplicate chrome. Use the
+       * merged Tailwind `gray` scale (same Theme UI theme) for header/tooling so the bar is
+       * distinct from zebra stripes while staying inside the design system.
+       */
+      const gray = theme?.colors?.gray;
+      const headerChrome =
+        Array.isArray(gray) && typeof gray[9] === "string"
+          ? gray[9]
+          : chronogroveCssColor(c.tableHeaderBackground, "#1a202c");
+
+      params.dataBackgroundColor = chronogroveCssColor(
+        c.tableRowBackground,
+        "rgba(30, 30, 47, 0.25)"
+      );
+      params.chromeBackgroundColor = headerChrome;
+      params.headerBackgroundColor = headerChrome;
+      params.oddRowBackgroundColor = chronogroveCssColor(
+        c.tableRowAlternateBackground,
+        "rgba(30, 37, 48, 0.5)"
+      );
+      params.textColor = tableText;
+      params.headerTextColor = tableText;
+      params.cellTextColor = tableText;
+      if (typeof c.textMuted === "string") {
+        params.subtleTextColor = c.textMuted;
+      }
+    } else {
+      /*
+       * Light: `tableHeaderBackground` / `tableRowAlternateBackground` / `background` from Chronogrove
+       * (chronogrove-theme-surface-colors + theme.js). No custom off-palette chrome.
+       */
+      const headerChrome = chronogroveCssColor(c.tableHeaderBackground, "#f4f4f9");
+      params.dataBackgroundColor = chronogroveCssColor(c.background, "#fdf8f5");
+      params.chromeBackgroundColor = headerChrome;
+      params.headerBackgroundColor = headerChrome;
+      params.oddRowBackgroundColor = chronogroveCssColor(
+        c.tableRowAlternateBackground,
+        "#fafafa"
+      );
+      params.textColor = tableText;
+      params.headerTextColor = tableText;
+      params.cellTextColor = tableText;
+      if (typeof c.textMuted === "string") {
+        params.subtleTextColor = c.textMuted;
+      }
+    }
+
+    return themeQuartz.withParams(params);
+  }, [colorMode, theme]);
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -146,18 +224,18 @@ const HomePage = () => {
   return (
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
       {/*
-        Keep flex utilities off the ag-theme host — mixing display:flex with .ag-theme-* breaks
+        Keep flex utilities off the grid host — mixing display:flex with the grid root breaks
         internal sizing; AG Grid uses NO_VALUE_SENTINEL (15538px) until the host has real dimensions.
       */}
       <div
-        className={`${agGridSurfaceClass} w-full overflow-hidden rounded-md shadow-sm`}
+        className="w-full overflow-hidden rounded-md shadow-sm"
         style={{
           height: "calc(100dvh - 12rem)",
           minHeight: "min(60vh, 480px)",
         }}
       >
         <AgGridReact
-          theme="legacy"
+          theme={agGridTheme}
           rowData={rowData ?? []}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
