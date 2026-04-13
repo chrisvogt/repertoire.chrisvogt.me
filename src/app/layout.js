@@ -5,6 +5,7 @@ import {
   ChronogroveNextRootLayoutHead,
 } from "@chronogrove/ui/next";
 
+import ArticleColumnShell from "../components/article-column-shell";
 import Providers from "./providers";
 import SiteHeader from "../components/site-header";
 
@@ -20,17 +21,12 @@ export default function RootLayout({ children }) {
       <head>
         <ChronogroveNextRootLayoutHead />
       </head>
-      <body
-        suppressHydrationWarning
-        className="flex h-screen min-h-0 flex-col antialiased"
-      >
+      <body suppressHydrationWarning className="shell-body">
         <ChronogroveNextEmotionRegistry>
           <Providers>
             <SiteHeader />
-            <main className="relative z-10 flex min-h-0 flex-1 flex-col">
-              <div className="container mx-auto flex min-h-0 flex-1 flex-col p-4">
-                {children}
-              </div>
+            <main className="shell-main">
+              <ArticleColumnShell>{children}</ArticleColumnShell>
             </main>
           </Providers>
         </ChronogroveNextEmotionRegistry>

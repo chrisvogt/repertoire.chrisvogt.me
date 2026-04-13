@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useColorMode, useThemeUI } from "theme-ui";
+import { Box } from "@theme-ui/components";
+import PageHeader from "@chronogrove/ui/page-header";
+import chronogroveTheme from "@chronogrove/ui/theme";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule, themeQuartz } from "ag-grid-community";
 
@@ -53,15 +56,19 @@ const columnDefs = [
     cellRenderer: (params) => {
       if (params.value) {
         return (
-          <a
+          <Box
+            as="a"
             href={params.value}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:underline"
-            style={{ color: "var(--theme-ui-colors-primary, #422ea3)" }}
+            sx={{
+              color: "primary",
+              textDecoration: "none",
+              "&:hover": { textDecoration: "underline" },
+            }}
           >
             Sheet Music
-          </a>
+          </Box>
         );
       }
       return "";
@@ -91,13 +98,29 @@ const HomePage = () => {
     const bodyText = chronogroveCssColor(c.text, isDark ? "#fff" : "#111");
     const tableText = chronogroveCssColor(c.tableText, bodyText);
 
+    /*
+     * Fluid type: blog copy uses Theme UI responsive steps + fluid headings (`calc(… + vw)`).
+     * AG Grid `withParams` only accepts strings — use `clamp(min, base + vw, max)` with Chronogrove
+     * `fontSizes` bounds so cells shrink on narrow viewports instead of staying at fixed rem sizes.
+     */
+    const sizes = chronogroveTheme.fontSizes;
+    const minCell = typeof sizes[0] === "string" ? sizes[0] : "0.875rem";
+    const maxCell = typeof sizes[2] === "string" ? sizes[2] : "1.25rem";
+    const minHeader = typeof sizes[1] === "string" ? sizes[1] : "1rem";
+    const maxHeader = typeof sizes[3] === "string" ? sizes[3] : "1.375rem";
+    const fluidCell = `clamp(${minCell}, 0.7rem + 1.15vw, ${maxCell})`;
+    const fluidHeader = `clamp(${minHeader}, 0.75rem + 1.2vw, ${maxHeader})`;
+
     /** AG Grid’s foundation `backgroundColor` should be opaque; data/header layers use dedicated params. */
     const params = {
       accentColor: primary,
       backgroundColor: pageBg,
       foregroundColor: bodyText,
       browserColorScheme: isDark ? "dark" : "light",
-      fontFamily: theme?.fonts?.body,
+      fontFamily: chronogroveTheme.fonts.body,
+      fontSize: fluidCell,
+      dataFontSize: fluidCell,
+      headerFontSize: fluidHeader,
       borderColor: isDark
         ? chronogroveCssColor(c.tableBorder, "rgba(255, 255, 255, 0.12)")
         : "rgba(17, 17, 17, 0.1)",
@@ -109,7 +132,7 @@ const HomePage = () => {
        * (purple surface), odd rows `tableRowAlternateBackground` (rgba 30,37,48 — grey-blue),
        * headers `tableHeaderBackground` (same hue as odd rows, higher alpha). That matches MDX
        * tables, but in AG Grid the header band and odd stripes read as duplicate chrome. Use the
-       * merged Tailwind `gray` scale (same Theme UI theme) for header/tooling so the bar is
+       * `@theme-ui/preset-tailwind` `gray` scale from the same theme for header/tooling so the bar is
        * distinct from zebra stripes while staying inside the design system.
        */
       const gray = theme?.colors?.gray;
@@ -222,16 +245,31 @@ const HomePage = () => {
   }, [rowData]);
 
   return (
-    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
+        minHeight: 0,
+        minWidth: 0,
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      {/* Same component as blog index / MDX posts: `fontSize: [6, calc(1.25em + 2vw)]` */}
+      <PageHeader>My Piano Repertoire</PageHeader>
       {/*
-        Keep flex utilities off the grid host — mixing display:flex with the grid root breaks
-        internal sizing; AG Grid uses NO_VALUE_SENTINEL (15538px) until the host has real dimensions.
+        Flex child with minHeight: 0 gives AG Grid a bounded height; avoid fixed calc now that the
+        shell uses a compact TopNavigation-style header.
       */}
-      <div
-        className="w-full overflow-hidden rounded-md shadow-sm"
-        style={{
-          height: "calc(100dvh - 12rem)",
-          minHeight: "min(60vh, 480px)",
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: "min(50vh, 420px)",
+          width: "100%",
+          overflow: "hidden",
+          borderRadius: "default",
+          boxShadow: "default",
         }}
       >
         <AgGridReact
@@ -243,8 +281,8 @@ const HomePage = () => {
           overlayNoRowsTemplate="<span class='ag-overlay-no-rows-center'>No Rows to Show</span>"
           onGridReady={onGridReady}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
