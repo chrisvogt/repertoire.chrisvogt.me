@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ["repertoire.dev-chrisvogt.me"],
   transpilePackages: [
     "@chronogrove/ui",
     "@theme-ui/components",

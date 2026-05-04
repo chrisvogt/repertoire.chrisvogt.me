@@ -2,10 +2,9 @@
 
 import { Box } from "@theme-ui/components";
 import { ChronogroveNextAppShell } from "@chronogrove/ui/next";
+import { SkipNavLink } from "@chronogrove/ui/skip-nav";
 
-const crossDomainColorMode = process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN?.trim()
-  ? { registrableDomain: process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN.trim() }
-  : null;
+import { chronogroveCrossDomainColorMode } from "../lib/chronogrove-cross-domain-color-mode";
 
 /**
  * ChronogroveNextAppShell’s inner Box is not a flex container, so `flex: 1` on `<main>` would not
@@ -14,7 +13,7 @@ const crossDomainColorMode = process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMA
  */
 export default function Providers({ children }) {
   return (
-    <ChronogroveNextAppShell crossDomainColorMode={crossDomainColorMode}>
+    <ChronogroveNextAppShell crossDomainColorMode={chronogroveCrossDomainColorMode}>
       <Box
         sx={{
           display: "flex",
@@ -25,6 +24,7 @@ export default function Providers({ children }) {
           height: "100vh",
         }}
       >
+        <SkipNavLink />
         {children}
       </Box>
     </ChronogroveNextAppShell>
