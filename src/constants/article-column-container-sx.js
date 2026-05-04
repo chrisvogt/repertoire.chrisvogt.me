@@ -1,9 +1,10 @@
+import { articleColumnContainerSx as chronogroveArticleColumnSx } from "@chronogrove/ui/article-column-container";
+
 /**
- * Matches the My Music index (`www.chrisvogt.me/src/pages/music.js`): a bit wider than the
- * default article column (`max(80ch, 50vw)` in `article-column-container-sx.js`).
+ * Base measure from `@chronogrove/ui` (blog / MDX). Wider third breakpoint matches the My Music
+ * index on www.chrisvogt.me (`max(95ch, 75vw)`).
  */
 export const articleColumnContainerSx = {
-  position: "relative",
+  ...chronogroveArticleColumnSx,
   width: ["", "", "max(95ch, 75vw)"],
-  lineHeight: 1.7,
 };

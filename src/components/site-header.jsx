@@ -1,9 +1,7 @@
 "use client";
 
 /**
- * Temporary repertoire chrome: mirrors `gatsby-theme-chronogrove` `TopNavigation` layout
- * (brand + color toggle on the left, primary actions on the right). Replace with the shared
- * header once `@chronogrove/ui` publishes an app-shell / navigation export.
+ * Mirrors `gatsby-theme-chronogrove` `TopNavigation` (brand + color toggle, optional nav slot).
  *
  * @see gatsby-theme-chronogrove/theme/src/components/top-navigation.js
  */
@@ -26,7 +24,6 @@ export default function SiteHeader() {
         variant: "styles.TopNavigation",
         minHeight: "64px",
         color: "text",
-        bg: "panel-background",
       }}
     >
       <Container
@@ -69,8 +66,11 @@ export default function SiteHeader() {
           </Box>
         </Box>
 
-        {/* Right: sheet CTA */}
+        {/* Right: primary actions (same landmark pattern as theme `TopNavigation` nav) */}
         <Box
+          as="nav"
+          role="navigation"
+          aria-label="Site links"
           sx={{
             display: "flex",
             flexWrap: "wrap",

@@ -84,10 +84,20 @@ const defaultColDef = {
   sortable: true,
 };
 
+/** Avoid AG Grid warning #26 when remounting or after synthetic resize races the new instance. */
+function getLiveGridApi(apiRef) {
+  const api = apiRef.current;
+  if (!api) return null;
+  if (typeof api.isDestroyed === "function" && api.isDestroyed()) return null;
+  return api;
+}
+
 const HomePage = () => {
   const [colorMode] = useColorMode();
   const { theme } = useThemeUI();
   const [rowData, setRowData] = useState(null);
+  /** Incremented when the document is restored from bfcache so AG Grid remounts with a real layout. */
+  const [agGridMountKey, setAgGridMountKey] = useState(0);
   const gridApiRef = useRef(null);
 
   const agGridTheme = useMemo(() => {
@@ -199,18 +209,54 @@ const HomePage = () => {
     fetchSongs();
   }, []);
 
+  useEffect(() => {
+    /*
+     * Back from www (often BFCache): `persisted` / `pagehide` markers are unreliable for
+     * cross-origin hops, so the grid never remounted. The *initial* `pageshow` almost always runs
+     * before this effect attaches; any later `pageshow` is a history restore — remount the grid.
+     * Debounce collapses `pageshow` + `resume` in the same restore. Destroyed-API guards elsewhere
+     * make this safe without DevTools timing.
+     */
+    let scheduled = false;
+    let lastBumpMs = 0;
+    const bumpGridAfterHistoryRestore = () => {
+      const now = Date.now();
+      if (now - lastBumpMs < 450) return;
+      lastBumpMs = now;
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        setAgGridMountKey((n) => n + 1);
+      });
+    };
+
+    const onPageShow = () => {
+      bumpGridAfterHistoryRestore();
+    };
+
+    document.addEventListener("resume", bumpGridAfterHistoryRestore);
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("resume", bumpGridAfterHistoryRestore);
+    };
+  }, []);
+
   const updateColumnVisibility = useCallback((api) => {
-    if (!api) return;
-    
+    if (!api || (typeof api.isDestroyed === "function" && api.isDestroyed())) return;
+
     const width = window.innerWidth;
     const isMobile = width < 768;
-    
+
     // AG Grid v35 uses setColumnsVisible (plural) with array of column IDs
     api.setColumnsVisible(["Quality", "Transpose"], !isMobile);
   }, []);
 
   const handleResize = useCallback(() => {
-    updateColumnVisibility(gridApiRef.current);
+    const api = getLiveGridApi(gridApiRef);
+    if (!api) return;
+    updateColumnVisibility(api);
   }, [updateColumnVisibility]);
 
   useEffect(() => {
@@ -220,17 +266,46 @@ const HomePage = () => {
     };
   }, [handleResize]);
 
-  const onGridReady = useCallback((params) => {
-    gridApiRef.current = params.api;
-    updateColumnVisibility(params.api);
-
-    if (rowData === null) {
-      params.api.setGridOption("loading", true);
+  const onGridPreDestroyed = useCallback((event) => {
+    if (gridApiRef.current === event.api) {
+      gridApiRef.current = null;
     }
-  }, [rowData, updateColumnVisibility]);
+  }, []);
+
+  const onGridReady = useCallback(
+    (params) => {
+      const api = params.api;
+      gridApiRef.current = api;
+      updateColumnVisibility(api);
+
+      if (rowData === null) {
+        api.setGridOption("loading", true);
+      } else if (rowData.length === 0) {
+        api.showNoRowsOverlay();
+        api.setGridOption("loading", false);
+      } else {
+        api.setGridOption("loading", false);
+        api.hideOverlay();
+      }
+
+      /*
+       * After first paint, nudge layout once the grid’s host has dimensions (avoids 0×0 when the
+       * main thread is faster than DevTools-throttled runs).
+       */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const live = getLiveGridApi(gridApiRef);
+          if (!live) return;
+          updateColumnVisibility(live);
+          window.dispatchEvent(new Event("resize"));
+        });
+      });
+    },
+    [rowData, updateColumnVisibility]
+  );
 
   useEffect(() => {
-    const api = gridApiRef.current;
+    const api = getLiveGridApi(gridApiRef);
     if (!api) return;
 
     if (rowData === null) {
@@ -275,29 +350,34 @@ const HomePage = () => {
         popular recording or release.
       </Box>
       {/*
-        Flex child with minHeight: 0 gives AG Grid a bounded height; avoid fixed calc now that the
-        shell uses a compact TopNavigation-style header.
+        Explicit vh height: after BFCache restore the `%`/flex height chain can resolve to 0 while
+        the cell still has min-height “space”. AG Grid needs a non-zero host box in px/vh terms.
       */}
       <Box
         sx={{
-          flex: 1,
-          /* Taller default viewport for long lists (~400 rows); still capped so tiny screens don’t overflow */
-          minHeight: ["min(52vh, 360px)", null, "min(68vh, 720px)"],
+          flex: "1 1 auto",
           width: "100%",
+          minHeight: "min(52vh, 360px)",
+          height: ["min(56vh, 420px)", null, "min(68vh, 720px)"],
+          minWidth: 0,
           overflow: "hidden",
           borderRadius: "default",
           boxShadow: "default",
         }}
       >
-        <AgGridReact
-          theme={agGridTheme}
-          rowData={rowData ?? []}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          overlayLoadingTemplate="<span class='ag-overlay-loading-center'>Loading songs...</span>"
-          overlayNoRowsTemplate="<span class='ag-overlay-no-rows-center'>No Rows to Show</span>"
-          onGridReady={onGridReady}
-        />
+        <Box sx={{ width: "100%", height: "100%", minHeight: 0 }}>
+          <AgGridReact
+            key={agGridMountKey}
+            theme={agGridTheme}
+            rowData={rowData ?? []}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            overlayLoadingTemplate="<span class='ag-overlay-loading-center'>Loading songs...</span>"
+            overlayNoRowsTemplate="<span class='ag-overlay-no-rows-center'>No Rows to Show</span>"
+            onGridPreDestroyed={onGridPreDestroyed}
+            onGridReady={onGridReady}
+          />
+        </Box>
       </Box>
     </Box>
   );

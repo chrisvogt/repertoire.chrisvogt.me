@@ -4,14 +4,12 @@ import {
   ChronogroveNextEmotionRegistry,
   ChronogroveNextRootLayoutHead,
 } from "@chronogrove/ui/next";
+import { SkipNavContent } from "@chronogrove/ui/skip-nav";
 
 import ArticleColumnShell from "../components/article-column-shell";
+import { chronogroveCrossDomainColorMode } from "../lib/chronogrove-cross-domain-color-mode";
 import Providers from "./providers";
 import SiteHeader from "../components/site-header";
-
-const crossDomainColorMode = process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN?.trim()
-  ? { registrableDomain: process.env.NEXT_PUBLIC_COLOR_MODE_REGISTRABLE_DOMAIN.trim() }
-  : null;
 
 export const metadata = {
   title: "My Piano Repertoire | chrisvogt.me",
@@ -23,14 +21,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <ChronogroveNextRootLayoutHead crossDomainColorMode={crossDomainColorMode} />
+        <ChronogroveNextRootLayoutHead crossDomainColorMode={chronogroveCrossDomainColorMode} />
       </head>
       <body suppressHydrationWarning className="shell-body">
         <ChronogroveNextEmotionRegistry>
           <Providers>
             <SiteHeader />
             <main className="shell-main">
-              <ArticleColumnShell>{children}</ArticleColumnShell>
+              <SkipNavContent className="shell-skip-target">
+                <ArticleColumnShell>{children}</ArticleColumnShell>
+              </SkipNavContent>
             </main>
           </Providers>
         </ChronogroveNextEmotionRegistry>
